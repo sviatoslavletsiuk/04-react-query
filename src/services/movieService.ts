@@ -8,12 +8,15 @@ export interface MoviesResponse {
   page: number;
 }
 
-const API_KEY = import.meta.env.VITE_API_KEY; // Переконайтеся, що ключ у Vercel додано
+const ACCESS_TOKEN = import.meta.env.VITE_ACCESS_TOKEN;
 
 const movieInstance = axios.create({
   baseURL: "https://api.themoviedb.org/3",
+  headers: {
+    Authorization: `Bearer ${ACCESS_TOKEN}`,
+    Accept: "application/json",
+  },
   params: {
-    api_key: API_KEY,
     language: "en-US",
   },
 });
