@@ -13,15 +13,21 @@ const api = axios.create({
 
 interface SearchResponse {
   results: Movie[];
+  total_pages: number;
+  total_results: number;
 }
 
-export const fetchMovies = async (query: string): Promise<Movie[]> => {
+export const fetchMovies = async (
+  query: string,
+  page: number,
+): Promise<SearchResponse> => {
   const { data } = await api.get<SearchResponse>("/search/movie", {
     params: {
       query,
       language: "en-US",
-      page: 1,
+      page,
     },
   });
-  return data.results;
+
+  return data;
 };

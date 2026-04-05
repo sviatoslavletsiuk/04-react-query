@@ -1,56 +1,54 @@
+/* src/components/App/App.tsx */
 import { useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { fetchMovies } from "../../services/movieService";
 import SearchBar from "../SearchBar/SearchBar";
 import MovieGrid from "../MovieGrid/MovieGrid";
-import MovieModal from "../MovieModal/MovieModal";
 import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
-import { fetchMovies } from "../../services/movieService";
-import type { Movie } from "../../types/movie";
-import s from "./App.module.css";
+import Pagination from "../Pagination/Pagination";
+import css from "./App.module.css";
 
 const App = () => {
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<boolean>(false);
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [page, setPage] = useState<number>(1);
 
-  const handleSearch = async (query: string) => {
-    try {
-      setMovies([]);
-      setError(false);
-      setLoading(true);
-      const data = await fetchMovies(query);
-      if (data.length === 0) toast.error("No movies found!");
-      setMovies(data);
-    } catch {
-      setError(true); // Тепер стан помилки змінюється
-      toast.error("Something went wrong!");
-    } finally {
-      setLoading(false);
-    }
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["movies", searchQuery, page],
+    queryFn: () => fetchMovies(searchQuery, page),
+    enabled: searchQuery !== "",
+    placeholderData: keepPreviousData,
+    retry: false,
+  });
+
+  const handleSearch = (newQuery: string) => {
+    if (newQuery === searchQuery) return;
+    setSearchQuery(newQuery);
+    setPage(1);
   };
 
+  const totalPages = data?.total_pages || 0;
+
   return (
-    <div className={s.app}>
+    <div className={css.app}>
       <SearchBar onSubmit={handleSearch} />
-      <Toaster position="top-right" />
 
-      {/* Рендеримо ErrorMessage при помилці */}
-      {error && <ErrorMessage />}
+      {isLoading && <Loader />}
+      {isError && <ErrorMessage />}
 
-      {/* Рендеримо Loader при завантаженні */}
-      {loading && <Loader />}
+      {data && data.results.length > 0 && (
+        <>
+          {totalPages > 1 && (
+            <Pagination
+              totalPages={totalPages}
+              onPageChange={setPage}
+              forcePage={page}
+              styles={css}
+            />
+          )}
 
-      {!loading && !error && (
-        <MovieGrid movies={movies} onSelect={setSelectedMovie} />
-      )}
-
-      {selectedMovie && (
-        <MovieModal
-          movie={selectedMovie}
-          onClose={() => setSelectedMovie(null)}
-        />
+          <MovieGrid movies={data.results} />
+        </>
       )}
     </div>
   );

@@ -3,14 +3,14 @@ import s from "./MovieGrid.module.css";
 
 interface MovieGridProps {
   movies: Movie[];
-  onSelect: (movie: Movie) => void;
+  onSelect?: (movie: Movie) => void;
 }
 
 const MovieGrid = ({ movies, onSelect }: MovieGridProps) => {
   return (
     <ul className={s.grid}>
       {movies.map((movie) => (
-        <li key={movie.id} onClick={() => onSelect(movie)}>
+        <li key={movie.id} onClick={() => onSelect?.(movie)}>
           <div className={s.card}>
             <img
               className={s.image}

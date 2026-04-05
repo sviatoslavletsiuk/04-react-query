@@ -7,3 +7,7 @@ export interface Movie {
   release_date: string;
   vote_average: number; // Тут має бути 'average'
 }
+export interface MoviesResponse {
+  results: Movie[];
+  total_pages: number;
+}
