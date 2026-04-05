@@ -16,9 +16,6 @@ const movieInstance = axios.create({
     Authorization: `Bearer ${ACCESS_TOKEN}`,
     Accept: "application/json",
   },
-  params: {
-    language: "en-US",
-  },
 });
 
 export const fetchMovies = async (
@@ -26,7 +23,12 @@ export const fetchMovies = async (
   page: number,
 ): Promise<MoviesResponse> => {
   const { data } = await movieInstance.get<MoviesResponse>("/search/movie", {
-    params: { query, page },
+    params: {
+      query,
+      page,
+      language: "en-US",
+      include_adult: false,
+    },
   });
   return data;
 };
